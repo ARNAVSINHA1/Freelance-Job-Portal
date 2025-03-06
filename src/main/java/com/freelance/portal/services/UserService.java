@@ -1,41 +1,18 @@
 package com.freelance.portal.services;
 
+import com.freelance.portal.models.User;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
+public interface UserService {
+	User findUserByEmail(String email);
 
-import com.freelance.portal.models.User;
-import com.freelance.portal.repositories.UserRepository;
+	String registerUser(User user);
 
-@Service
-public class UserService {
+	List<User> listUsers();
 
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private BCryptPasswordEncoder passwordEncoder;
+	User updateUser(Long id, User user);
 
-	public User findUserByEmail(String email) {
-		return userRepository.findByEmail(email);
-	}
+	String deleteUser(Long id);
 
-	public String registerUser(User user) {
-		// Check if the email is already registered
-		if (findUserByEmail(user.getEmail()) != null) {
-			return "Email is already registered!";
-		}
-
-		// Encrypt password before saving
-		user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-		// Save user to DB
-		userRepository.save(user);
-		return "User registered successfully!";
-	}
-
-	public List<User> listUsers() {
-		return userRepository.findAll();
-	}
+	String changeUserPassword(Long userId, String oldPassword, String newPassword);
 }

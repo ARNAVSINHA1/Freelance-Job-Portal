@@ -1,10 +1,16 @@
 package com.freelance.portal.models;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,6 +35,10 @@ public class User {
 	private String email;
 	@Column(nullable = false)
 	private String password;
+
+	@ManyToMany
+	@JoinTable(name = "job_applications", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "job_id"))
+	private Set<Job> appliedJobs = new HashSet<>();
 
 	public Long getId() {
 		return id;
@@ -60,6 +70,14 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public Set<Job> getAppliedJobs() {
+		return appliedJobs;
+	}
+
+	public void applyForJob(Job job) {
+		this.appliedJobs.add(job);
 	}
 
 }

@@ -1,6 +1,15 @@
 package com.freelance.portal.models;
 
-import jakarta.persistence.*;
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Data;
 
 @Data
@@ -14,6 +23,9 @@ public class Job {
 	private String title;
 	private String description;
 	private String employer;
+
+	@ManyToMany(mappedBy = "appliedJobs")
+	private Set<User> applicants = new HashSet<>();
 
 	@Version // This field ensures Hibernate manages concurrent updates correctly
 	private Integer version;
@@ -57,7 +69,13 @@ public class Job {
 	public void setVersion(Integer version) {
 		this.version = version;
 	}
-	
-	
+
+	public Set<User> getApplicants() {
+		return applicants;
+	}
+
+	public void setApplicants(Set<User> applicants) {
+		this.applicants = applicants;
+	}
 
 }
