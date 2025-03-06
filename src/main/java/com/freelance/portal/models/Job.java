@@ -12,10 +12,15 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Version;
 import lombok.Data;
 
+/**
+ * Represents a job entity in the Freelance Job Portal.
+ * This class contains fields for job details and relationships with applicants.
+ */
 @Data
 @Entity
 @Table(name = "jobs")
 public class Job {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -27,7 +32,8 @@ public class Job {
 	@ManyToMany(mappedBy = "appliedJobs")
 	private Set<User> applicants = new HashSet<>();
 
-	@Version // This field ensures Hibernate manages concurrent updates correctly
+    @Version // This field ensures Hibernate manages concurrent updates correctly
+
 	private Integer version;
 
 	public Long getId() {

@@ -8,44 +8,83 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Controller for managing User entities in the Freelance Job Portal application.
+ * This class handles HTTP requests related to user operations.
+ */
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
-	@Autowired
-	private UserService userService;
+    @Autowired
+    private UserService userService;
 
-	@PostMapping("/register")
-	public ResponseEntity<String> registerUser(@RequestBody User user) {
-		return ResponseEntity.ok(userService.registerUser(user));
-	}
+    /**
+     * Creates a new user.
+     * @param user The user to be created.
+     * @return ResponseEntity containing the created user.
+     */
+    @PostMapping
+    public ResponseEntity<User> createUser(@RequestBody User user) {
+        User createdUser = userService.registerUser(user);
+        return ResponseEntity.ok(createdUser);
+    }
 
-	@GetMapping("/list")
-	public List<User> listUsers() {
-		return userService.listUsers();
-	}
+    /**
+     * Retrieves all users.
+     * @return ResponseEntity containing a list of all users.
+     */
+    @GetMapping
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.listUsers();
+        return ResponseEntity.ok(users);
+    }
 
-	@GetMapping("/email/{email}")
-	public ResponseEntity<User> findUserByEmail(@PathVariable String email) {
-		User user = userService.findUserByEmail(email);
-		return user != null ? ResponseEntity.ok(user) : ResponseEntity.notFound().build();
-	}
+    /**
+     * Retrieves a user by their ID.
+     * @param id The ID of the user to retrieve.
+     * @return ResponseEntity containing the user if found, or a 404 response if not found.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        return userService.findUserById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-	@PutMapping("/update/{id}")
-	public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-		User updatedUser = userService.updateUser(id, user);
-		return ResponseEntity.ok(updatedUser);
-	}
+    /**
+     * Updates a user by their ID.
+     * @param id The ID of the user to update.
+     * @param user The updated user information.
+     * @return ResponseEntity containing the updated user.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
+        User updatedUser = userService.updateUser(id, user);
+        return ResponseEntity.ok(updatedUser);
+    }
 
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-		return ResponseEntity.ok(userService.deleteUser(id));
-	}
+    /**
+     * Deletes a user by their ID.
+     * @param id The ID of the user to delete.
+     * @return ResponseEntity containing a success message.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+        String response = userService.deleteUser(id);
+        return ResponseEntity.ok(response);
+    }
 
-	@PutMapping("/change-password/{userId}")
-	public ResponseEntity<String> changePassword(@PathVariable Long userId, @RequestParam String oldPassword,
-			@RequestParam String newPassword) {
-		return ResponseEntity.ok(userService.changeUserPassword(userId, oldPassword, newPassword));
-	}
-
+    /**
+     * Changes the password for a user.
+     * @param id The ID of the user.
+     * @param oldPassword The user's old password.
+     * @param newPassword The user's new password.
+     * @return ResponseEntity containing a success message.
+     */
+    @PostMapping("/{id}/change-password")
+    public ResponseEntity<String> changePassword(@PathVariable Long id, @RequestParam String oldPassword, @RequestParam String newPassword) {
+        String response = userService.changeUserPassword(id, oldPassword, newPassword);
+        return ResponseEntity.ok(response);
+    }
 }

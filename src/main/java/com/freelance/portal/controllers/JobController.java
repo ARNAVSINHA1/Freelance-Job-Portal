@@ -7,61 +7,93 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * Controller for managing Job entities in the Freelance Job Portal application.
+ * This class handles HTTP requests related to job operations.
+ */
 @RestController
 @RequestMapping("/api/jobs")
 public class JobController {
 
-	@Autowired
-	private JobService jobService;
+    @Autowired
+    private JobService jobService;
 
-	@PostMapping("/register")
-	public ResponseEntity<String> registerJob(@RequestBody Job job) {
-		jobService.registerJob(job);
-		return ResponseEntity.ok("Job registered successfully!");
-	}
+    /**
+     * Creates a new job.
+     * @param job The job to be created.
+     * @return ResponseEntity containing the created job.
+     */
+    @PostMapping
+    public ResponseEntity<Job> createJob(@RequestBody Job job) {
+        Job createdJob = jobService.registerJob(job);
+        return ResponseEntity.ok(createdJob);
+    }
 
-	@GetMapping("/list")
-	public List<Job> listJobs() {
-		return jobService.listJobs();
-	}
+    /**
+     * Retrieves all jobs.
+     * @return ResponseEntity containing a list of all jobs.
+     */
+    @GetMapping
+    public ResponseEntity<List<Job>> getAllJobs() {
+        List<Job> jobs = jobService.listJobs();
+        return ResponseEntity.ok(jobs);
+    }
 
-	@GetMapping("/{id}")
-	public ResponseEntity<Optional<Job>> getJobById(@PathVariable Long id) {
-		Optional<Job> job = jobService.getJobById(id);
-		return job.isPresent() ? ResponseEntity.ok(job) : ResponseEntity.notFound().build();
-	}
+    /**
+     * Retrieves a job by its ID.
+     * @param id The ID of the job to retrieve.
+     * @return ResponseEntity containing the job if found, or a 404 response if not found.
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Job> getJobById(@PathVariable Long id) {
+        return jobService.getJobById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-	@PutMapping("/update/{id}")
-	public ResponseEntity<Job> updateJob(@PathVariable Long id, @RequestBody Job job) {
-		Job updatedJob = jobService.updateJob(id, job);
-		return ResponseEntity.ok(updatedJob);
-	}
+    /**
+     * Updates a job by its ID.
+     * @param id The ID of the job to update.
+     * @param job The updated job information.
+     * @return ResponseEntity containing the updated job.
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<Job> updateJob(@PathVariable Long id, @RequestBody Job job) {
+        Job updatedJob = jobService.updateJob(id, job);
+        return ResponseEntity.ok(updatedJob);
+    }
 
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<String> deleteJob(@PathVariable Long id) {
-		return ResponseEntity.ok(jobService.deleteJob(id));
-	}
+    /**
+     * Deletes a job by its ID.
+     * @param id The ID of the job to delete.
+     * @return ResponseEntity containing a success message.
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> deleteJob(@PathVariable Long id) {
+        String response = jobService.deleteJob(id);
+        return ResponseEntity.ok(response);
+    }
 
-	@GetMapping("/employer/{employer}")
-	public List<Job> findJobsByEmployer(@PathVariable String employer) {
-		return jobService.findJobsByEmployer(employer);
-	}
+    /**
+     * Retrieves jobs by employer's name.
+     * @param employer The name of the employer.
+     * @return ResponseEntity containing a list of jobs associated with the specified employer.
+     */
+    @GetMapping("/employer/{employer}")
+    public ResponseEntity<List<Job>> getJobsByEmployer(@PathVariable String employer) {
+        List<Job> jobs = jobService.findJobsByEmployer(employer);
+        return ResponseEntity.ok(jobs);
+    }
 
-	@GetMapping("/search")
-	public List<Job> searchJobsByTitle(@RequestParam String title) {
-		return jobService.searchJobsByTitle(title);
-	}
-
-	@PostMapping("/apply/{jobId}/user/{userId}")
-	public ResponseEntity<String> applyForJob(@PathVariable Long jobId, @PathVariable Long userId) {
-		return ResponseEntity.ok(jobService.applyForJob(jobId, userId));
-	}
-
-	@GetMapping("/applications/{userId}")
-	public List<Job> getUserJobApplications(@PathVariable Long userId) {
-		return jobService.getUserJobApplications(userId);
-	}
-
+    /**
+     * Searches for jobs by title.
+     * @param title The title to search for.
+     * @return ResponseEntity containing a list of jobs that match the search criteria.
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<Job>> searchJobs(@RequestParam String title) {
+        List<Job> jobs = jobService.searchJobsByTitle(title);
+        return ResponseEntity.ok(jobs);
+    }
 }

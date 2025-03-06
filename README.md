@@ -1,75 +1,61 @@
 # Freelance Job Portal API
 
 ## 🚀 Introduction
-The **Freelance Job Portal API** is a backend system built using **Spring Boot, Hibernate, JPA, and MySQL**. It provides RESTful APIs for managing job postings, user authentication, and job listings.
+The **Freelance Job Portal API** is a backend system built using **Spring Boot, Hibernate, JPA, and MySQL**. It provides RESTful APIs for managing job postings and user accounts.
 
-## 🛠 Tech Stack
-- **Spring Boot** - For backend logic
-- **Spring MVC** - For RESTful API development
-- **Hibernate & JPA** - For ORM and database interaction
-- **MySQL** - For database management
-- **Postman** - For API testing
+## 📚 Table of Contents
+- [Technologies Used](#-technologies-used)
+- [API Endpoints](#-api-endpoints)
+  - [User Endpoints](#user-endpoints)
+  - [Job Endpoints](#job-endpoints)
+- [Authentication](#-authentication)
+- [Installation and Setup](#-installation-and-setup)
+- [Contributions](#-contributions)
+- [Authors](#-authors)
+- [License](#-license)
 
-## 📌 Features
-- **User Registration & Authentication**
-- **Job Posting & Management**
-- **Retrieve Job Listings**
-- **Secure API Endpoints**
-- **Role-Based Access Control**
-
-## 🚀 Installation & Setup
-### 1️⃣ Clone the Repository
-```bash
-https://github.com/ARNAVSINHA1/Freelance-Job-Portal.git
-```
-
-### 2️⃣ Configure Database
-- Update `application.properties` with your MySQL credentials:
-```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/freelance_db
-spring.datasource.username=root
-spring.datasource.password=yourpassword
-```
-
-### 3️⃣ Build & Run the Application
-```bash
-mvn clean install
-mvn spring-boot:run
-```
+## 🛠 Technologies Used
+- **Spring Boot**: A framework that simplifies the development of Java applications by providing a set of tools and libraries.
+- **Hibernate**: An ORM (Object-Relational Mapping) tool for Java that simplifies database interactions.
+- **JPA (Java Persistence API)**: A specification for accessing, persisting, and managing data between Java objects and relational databases.
+- **MySQL**: A popular relational database management system used for storing application data.
+- **HTML, CSS, JavaScript**: Technologies used for the frontend development of the application.
 
 ## 📡 API Endpoints
-### 🔹 Test API
-```http
-GET /api/jobs/test
-```
-✅ Response: `Test endpoint works!`
 
-### 🔹 Post a Job
-```http
-POST /api/jobs/post
-```
-📥 Request Body (JSON):
-```json
-{
-  "title": "Software Engineer",
-  "description": "Looking for an experienced Java developer",
-  "salary": 60000
-}
-```
-✅ Response: `Job posted successfully!`
+### User Endpoints
+- **POST** `/api/users/register`: Register a new user.
+- **GET** `/api/users/list`: List all users.
+- **GET** `/api/users/email/{email}`: Find a user by email.
+- **PUT** `/api/users/update/{id}`: Update user information.
+- **DELETE** `/api/users/delete/{id}`: Delete a user.
+- **PUT** `/api/users/change-password/{userId}`: Change a user's password.
 
-### 🔹 List All Jobs
-```http
-GET /api/jobs/list
-```
-✅ Response: List of jobs in JSON format.
+### Job Endpoints
+- **POST** `/api/jobs/register`: Register a new job.
+- **GET** `/api/jobs/list`: List all jobs.
+- **GET** `/api/jobs/{id}`: Retrieve a job by ID.
+- **PUT** `/api/jobs/update/{id}`: Update job information.
+- **DELETE** `/api/jobs/delete/{id}`: Delete a job.
+- **GET** `/api/jobs/employer/{employer}`: Find jobs by employer.
+- **GET** `/api/jobs/search`: Search for jobs by title.
+- **POST** `/api/jobs/apply/{jobId}/user/{userId}`: Apply for a job.
+- **GET** `/api/jobs/applications/{userId}`: Get job applications for a user.
 
-## 📝 Contribution
-Feel free to **fork** the repository and submit **pull requests** to contribute! 🎯
+## 🔒 Authentication
+The API requires user authentication for certain endpoints.
 
-## 🏆 Author
-👤 **Arnava Kumar Sinha**  
-🔗 [LinkedIn](https://www.linkedin.com/in/arnavsinha1) | [Portfolio](https://arnavsinha1.github.io/arnava-portfolio/)
+## 📦 Installation and Setup
+1. Clone the repository: `git clone <repository-url>`
+2. Navigate to the project directory: `cd Freelance-Job-Portal`
+3. Install dependencies: `mvn install`
+4. Run the application: `mvn spring-boot:run`
 
-## 📜 License
-This project is **open-source** under the [MIT License](LICENSE).
+## 🤝 Contributions
+Contributions are welcome! Please submit a pull request or open an issue for any suggestions or improvements.
+
+## 👤 Authors
+- [Your Name](https://github.com/yourprofile)
+
+## 📄 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

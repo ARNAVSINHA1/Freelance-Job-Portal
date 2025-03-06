@@ -18,6 +18,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Represents a user entity in the Freelance Job Portal.
+ * This class contains fields for user details and relationships with applied jobs.
+ */
 @Data
 @Entity
 @Table(name = "users")
@@ -26,6 +30,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -36,7 +41,11 @@ public class User {
 	@Column(nullable = false)
 	private String password;
 
-	@ManyToMany
+    /**
+     * Represents the jobs that the user has applied for.
+     */
+    @ManyToMany
+
 	@JoinTable(name = "job_applications", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "job_id"))
 	private Set<Job> appliedJobs = new HashSet<>();
 

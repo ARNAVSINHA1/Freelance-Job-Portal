@@ -11,33 +11,75 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
-@Configuration
+/**
+ * Security configuration class for the Freelance Job Portal application.
+ * This class configures security settings, including authentication and authorization.
+ */
 @EnableWebSecurity
 public class SecurityConfig {
+    /**
+     * Configures the security filter chain for the application.
+     * @param http HttpSecurity object to configure security settings.
+     * @return SecurityFilterChain object with the configured settings.
+     * @throws Exception if an error occurs during configuration.
+     */
+    /**
+     * Configures the security filter chain for the application.
+     * @param http HttpSecurity object to configure security settings.
+     * @return SecurityFilterChain object with the configured settings.
+     * @throws Exception if an error occurs during configuration.
+     */
+    /**
+     * Configures the security filter chain for the application.
+     * @param http HttpSecurity object to configure security settings.
+     * @return SecurityFilterChain object with the configured settings.
+     * @throws Exception if an error occurs during configuration.
+     */
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable()) // Disable CSRF protection
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/welcome").authenticated() // Secure welcome page
+                        .anyRequest().permitAll()) // Allow all other requests
+                .formLogin(form -> form.defaultSuccessUrl("/api/welcome", true) // Redirect to welcome page after login
+                        .permitAll())
+                .logout(logout -> logout.permitAll()); // Allow logout for all users
 
-	@Bean
-	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable())
-				.authorizeHttpRequests(auth -> auth.requestMatchers("/api/welcome").authenticated() // Secure welcome
-																									// page
-						.anyRequest().permitAll())
-				.formLogin(form -> form.defaultSuccessUrl("/api/welcome", true) // Redirect to welcome page after login
-						.permitAll())
-				.logout(logout -> logout.permitAll());
+        return http.build();
+    }
 
-		return http.build();
-	}
+    /**
+     * Provides a BCryptPasswordEncoder bean for password encryption.
+     * @return BCryptPasswordEncoder instance.
+     */
+    /**
+     * Provides a BCryptPasswordEncoder bean for password encryption.
+     * @return BCryptPasswordEncoder instance.
+     */
+    /**
+     * Provides a BCryptPasswordEncoder bean for password encryption.
+     * @return BCryptPasswordEncoder instance.
+     */
+    @Bean
+    BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	BCryptPasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
-
-	@Bean
-	UserDetailsService userDetailsService() {
-		UserDetails user = User.builder().username("user").password(passwordEncoder().encode("password")) // Encrypt
-																											// password
-				.roles("USER").build();
-		return new InMemoryUserDetailsManager(user);
-	}
+    /**
+     * Configures an in-memory user details service with a default user.
+     * @return UserDetailsService instance with the configured user.
+     */
+    /**
+     * Configures an in-memory user details service with a default user.
+     * @return UserDetailsService instance with the configured user.
+     */
+    /**
+     * Configures an in-memory user details service with a default user.
+     * @return UserDetailsService instance with the configured user.
+     */
+    @Bean
+    UserDetailsService userDetailsService() {
+        UserDetails user = User.builder().username("user").password(passwordEncoder().encode("password")) // Encrypt password
+                .roles("USER").build();
+        return new InMemoryUserDetailsManager(user); // Return in-memory user details manager
+    }
 }
