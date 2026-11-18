@@ -2,9 +2,15 @@ package com.freelance.portal.controllers;
 
 import com.freelance.portal.models.Job;
 import com.freelance.portal.services.JobService;
+import com.freelance.portal.dto.JobRequest;
+import com.freelance.portal.dto.JobResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.lang.NonNull;
 
 import java.util.List;
 
@@ -25,9 +31,15 @@ public class JobController {
      * @return ResponseEntity containing the created job.
      */
     @PostMapping
-    public ResponseEntity<Job> createJob(@RequestBody Job job) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<JobResponse> createJob(@Valid @RequestBody JobRequest request) {
+        Job job = new Job();
+        job.setTitle(request.title());
+        job.setDescription(request.description());
+        job.setEmployer(request.employer());
+
         Job createdJob = jobService.registerJob(job);
-        return ResponseEntity.ok(createdJob);
+        return ResponseEntity.status(HttpStatus.CREATED).body(JobResponse.from(createdJob));
     }
 
     /**
@@ -35,8 +47,10 @@ public class JobController {
      * @return ResponseEntity containing a list of all jobs.
      */
     @GetMapping
-    public ResponseEntity<List<Job>> getAllJobs() {
-        List<Job> jobs = jobService.listJobs();
+    public ResponseEntity<List<JobResponse>> getAllJobs() {
+        List<JobResponse> jobs = jobService.listJobs().stream()
+                .map(JobResponse::from)
+                .toList();
         return ResponseEntity.ok(jobs);
     }
 
@@ -46,8 +60,9 @@ public class JobController {
      * @return ResponseEntity containing the job if found, or a 404 response if not found.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Job> getJobById(@PathVariable Long id) {
+    public ResponseEntity<JobResponse> getJobById(@PathVariable @NonNull Long id) {
         return jobService.getJobById(id)
+                .map(JobResponse::from)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -59,9 +74,15 @@ public class JobController {
      * @return ResponseEntity containing the updated job.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Job> updateJob(@PathVariable Long id, @RequestBody Job job) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<JobResponse> updateJob(@PathVariable @NonNull Long id, @Valid @RequestBody JobRequest request) {
+        Job job = new Job();
+        job.setTitle(request.title());
+        job.setDescription(request.description());
+        job.setEmployer(request.employer());
+
         Job updatedJob = jobService.updateJob(id, job);
-        return ResponseEntity.ok(updatedJob);
+        return ResponseEntity.ok(JobResponse.from(updatedJob));
     }
 
     /**
@@ -70,7 +91,8 @@ public class JobController {
      * @return ResponseEntity containing a success message.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteJob(@PathVariable Long id) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<String> deleteJob(@PathVariable @NonNull Long id) {
         String response = jobService.deleteJob(id);
         return ResponseEntity.ok(response);
     }
@@ -81,8 +103,10 @@ public class JobController {
      * @return ResponseEntity containing a list of jobs associated with the specified employer.
      */
     @GetMapping("/employer/{employer}")
-    public ResponseEntity<List<Job>> getJobsByEmployer(@PathVariable String employer) {
-        List<Job> jobs = jobService.findJobsByEmployer(employer);
+    public ResponseEntity<List<JobResponse>> getJobsByEmployer(@PathVariable String employer) {
+        List<JobResponse> jobs = jobService.findJobsByEmployer(employer).stream()
+                .map(JobResponse::from)
+                .toList();
         return ResponseEntity.ok(jobs);
     }
 
@@ -92,8 +116,10 @@ public class JobController {
      * @return ResponseEntity containing a list of jobs that match the search criteria.
      */
     @GetMapping("/search")
-    public ResponseEntity<List<Job>> searchJobs(@RequestParam String title) {
-        List<Job> jobs = jobService.searchJobsByTitle(title);
+    public ResponseEntity<List<JobResponse>> searchJobs(@RequestParam String title) {
+        List<JobResponse> jobs = jobService.searchJobsByTitle(title).stream()
+                .map(JobResponse::from)
+                .toList();
         return ResponseEntity.ok(jobs);
     }
 }

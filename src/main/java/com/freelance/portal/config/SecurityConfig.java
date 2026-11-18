@@ -4,82 +4,70 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
-/**
- * Security configuration class for the Freelance Job Portal application.
- * This class configures security settings, including authentication and authorization.
- */
+@Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
-    /**
-     * Configures the security filter chain for the application.
-     * @param http HttpSecurity object to configure security settings.
-     * @return SecurityFilterChain object with the configured settings.
-     * @throws Exception if an error occurs during configuration.
-     */
-    /**
-     * Configures the security filter chain for the application.
-     * @param http HttpSecurity object to configure security settings.
-     * @return SecurityFilterChain object with the configured settings.
-     * @throws Exception if an error occurs during configuration.
-     */
-    /**
-     * Configures the security filter chain for the application.
-     * @param http HttpSecurity object to configure security settings.
-     * @return SecurityFilterChain object with the configured settings.
-     * @throws Exception if an error occurs during configuration.
-     */
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable()) // Disable CSRF protection
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/welcome").authenticated() // Secure welcome page
-                        .anyRequest().permitAll()) // Allow all other requests
-                .formLogin(form -> form.defaultSuccessUrl("/api/welcome", true) // Redirect to welcome page after login
+    SecurityFilterChain securityFilterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/auth/csrf", "/api/jobs/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginProcessingUrl("/api/auth/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .successHandler((request, response, authentication) ->
+                                response.setStatus(HttpStatus.NO_CONTENT.value()))
+                        .failureHandler((request, response, exception) ->
+                                response.setStatus(HttpStatus.UNAUTHORIZED.value()))
                         .permitAll())
-                .logout(logout -> logout.permitAll()); // Allow logout for all users
+                .logout(logout -> logout
+                        .logoutUrl("/api/auth/logout")
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+                        .logoutSuccessHandler((request, response, authentication) ->
+                                response.setStatus(HttpStatus.NO_CONTENT.value()))
+                        .permitAll())
+                .sessionManagement(session -> session
+                        .maximumSessions(-1)
+                        .expiredSessionStrategy(event ->
+                                event.getResponse().setStatus(HttpStatus.UNAUTHORIZED.value()))
+                        .sessionRegistry(sessionRegistry))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                        .accessDeniedHandler((request, response, exception) ->
+                                response.setStatus(HttpStatus.FORBIDDEN.value())));
 
         return http.build();
     }
 
-    /**
-     * Provides a BCryptPasswordEncoder bean for password encryption.
-     * @return BCryptPasswordEncoder instance.
-     */
-    /**
-     * Provides a BCryptPasswordEncoder bean for password encryption.
-     * @return BCryptPasswordEncoder instance.
-     */
-    /**
-     * Provides a BCryptPasswordEncoder bean for password encryption.
-     * @return BCryptPasswordEncoder instance.
-     */
     @Bean
     BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Configures an in-memory user details service with a default user.
-     * @return UserDetailsService instance with the configured user.
-     */
-    /**
-     * Configures an in-memory user details service with a default user.
-     * @return UserDetailsService instance with the configured user.
-     */
-    /**
-     * Configures an in-memory user details service with a default user.
-     * @return UserDetailsService instance with the configured user.
-     */
     @Bean
-    UserDetailsService userDetailsService() {
-        UserDetails user = User.builder().username("user").password(passwordEncoder().encode("password")) // Encrypt password
-                .roles("USER").build();
-        return new InMemoryUserDetailsManager(user); // Return in-memory user details manager
+    SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    @Bean
+    HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 }

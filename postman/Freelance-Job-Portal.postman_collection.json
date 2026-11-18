@@ -1,0 +1,402 @@
+{
+  "info": {
+    "name": "Freelance Job Portal API",
+    "description": "REST API requests grouped by authentication, users, jobs, and security checks. Set the collection variables before use. Postman must retain the JSESSIONID cookie between requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "csrfToken", "value": "" },
+    { "key": "csrfHeaderName", "value": "X-CSRF-TOKEN" },
+    { "key": "name", "value": "" },
+    { "key": "email", "value": "" },
+    { "key": "password", "value": "" },
+    { "key": "newPassword", "value": "" },
+    { "key": "userId", "value": "" },
+    { "key": "jobId", "value": "" },
+    { "key": "jobTitle", "value": "Spring Backend Developer" },
+    { "key": "employer", "value": "Example Company" }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get CSRF token",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/csrf",
+            "description": "Call first. Postman retains the session cookie; this test stores the CSRF token/header name."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CSRF token issued', () => pm.response.to.have.status(200));",
+                  "const csrf = pm.response.json();",
+                  "pm.collectionVariables.set('csrfToken', csrf.token);",
+                  "pm.collectionVariables.set('csrfHeaderName', csrf.headerName);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                { "key": "email", "value": "{{email}}", "type": "text" },
+                { "key": "password", "value": "{{password}}", "type": "text" }
+              ]
+            },
+            "url": "{{baseUrl}}/api/auth/login",
+            "description": "Uses a database account. Successful login returns 204 and keeps the session cookie."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Login succeeds', () => pm.response.to.have.status(204));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" }],
+            "url": "{{baseUrl}}/api/auth/logout",
+            "description": "Requires the current session cookie and CSRF header."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Logout succeeds', () => pm.response.to.have.status(204));"]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Register USER",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{name}}\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users",
+            "description": "Public registration. The server always assigns USER; credentials are not returned."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Registration returns 201', () => pm.response.to.have.status(201));",
+                  "const user = pm.response.json();",
+                  "pm.collectionVariables.set('userId', user.id);",
+                  "pm.test('Response does not contain password', () => pm.expect(user).not.to.have.property('password'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List users (ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/users" },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Admin can list users', () => pm.response.to.have.status(200));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get user by ID (self or ADMIN)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/users/{{userId}}" }
+        },
+        {
+          "name": "Update user profile (self or ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{name}}\",\n  \"email\": \"{{email}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users/{{userId}}"
+          }
+        },
+        {
+          "name": "Assign role (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"EMPLOYER\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users/{{userId}}/role",
+            "description": "ADMIN only. Role changes expire the user's active sessions."
+          }
+        },
+        {
+          "name": "Change own password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"{{password}}\",\n  \"newPassword\": \"{{newPassword}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users/{{userId}}/change-password",
+            "description": "Requires the current password and the authenticated user's own ID. Existing sessions are expired."
+          }
+        },
+        {
+          "name": "Delete own user (self or ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" }],
+            "url": "{{baseUrl}}/api/users/{{userId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "List jobs (public)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/jobs" }
+        },
+        {
+          "name": "Get job by ID (public)",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/jobs/{{jobId}}" }
+        },
+        {
+          "name": "Search jobs by title (public)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/jobs/search?title={{jobTitle}}"
+          }
+        },
+        {
+          "name": "Jobs by employer (public)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/jobs/employer/{{employer}}"
+          }
+        },
+        {
+          "name": "Create job (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{jobTitle}}\",\n  \"description\": \"Build REST APIs using Spring Boot.\",\n  \"employer\": \"{{employer}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/jobs",
+            "description": "Currently ADMIN only. EMPLOYER job ownership is not modeled yet."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Job created', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('jobId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update job (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{jobTitle}}\",\n  \"description\": \"Updated job description.\",\n  \"employer\": \"{{employer}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/jobs/{{jobId}}"
+          }
+        },
+        {
+          "name": "Delete job (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" }],
+            "url": "{{baseUrl}}/api/jobs/{{jobId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Negative security checks",
+      "item": [
+        {
+          "name": "Anonymous user list (expect 401)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users",
+            "description": "Run with no JSESSIONID cookie."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Anonymous access is rejected', () => pm.response.to.have.status(401));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "USER cannot list users (expect 403)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users",
+            "description": "Run while logged in as USER."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Insufficient role is rejected', () => pm.response.to.have.status(403));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EMPLOYER cannot create a job yet (expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"{{jobTitle}}\",\n  \"description\": \"Build REST APIs.\",\n  \"employer\": \"{{employer}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/jobs",
+            "description": "Run while logged in as EMPLOYER. Job writes await ownership modeling."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Employer job write is rejected', () => pm.response.to.have.status(403));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Invalid registration (expect 400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"email\": \"not-an-email\",\n  \"password\": \"short\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Validation rejects bad input', () => pm.response.to.have.status(400));"]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Duplicate registration (expect 409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "{{csrfHeaderName}}", "value": "{{csrfToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{name}}\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/users",
+            "description": "Run after Register USER with the same email."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": ["pm.test('Duplicate registration is rejected', () => pm.response.to.have.status(409));"]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

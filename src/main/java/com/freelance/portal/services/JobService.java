@@ -2,6 +2,7 @@ package com.freelance.portal.services;
 
 import java.util.List;
 import java.util.Optional;
+import org.springframework.lang.NonNull;
 
 import com.freelance.portal.models.Job;
 
@@ -10,17 +11,17 @@ public interface JobService {
 
 	List<Job> listJobs();
 
-	Optional<Job> getJobById(Long id);
+	Optional<Job> getJobById(@NonNull Long id);
 
-	Job updateJob(Long id, Job job);
+	Job updateJob(@NonNull Long id, Job job);
 
-	String deleteJob(Long id);
+	String deleteJob(@NonNull Long id);
 
 	List<Job> findJobsByEmployer(String employer);
 
 	List<Job> searchJobsByTitle(String title);
 
-	String applyForJob(Long jobId, Long userId);
+	String applyForJob(@NonNull Long jobId, @NonNull Long userId);
 
-	List<Job> getUserJobApplications(Long userId);
+	List<Job> getUserJobApplications(@NonNull Long userId);
 }

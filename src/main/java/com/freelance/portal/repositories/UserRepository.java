@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.freelance.portal.models.User;
+import java.util.Optional;
 
 /**
  * Repository interface for managing User entities.
@@ -17,6 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @param email The email address of the user.
      * @return The user associated with the specified email.
      */
-	User findByEmail(String email);
+	Optional<User> findByEmail(String email);
 
 }

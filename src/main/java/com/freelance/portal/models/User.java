@@ -5,6 +5,8 @@ import java.util.Set;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -40,6 +42,10 @@ public class User {
 	private String email;
 	@Column(nullable = false)
 	private String password;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'USER'")
+	private UserRole role = UserRole.USER;
 
     /**
      * Represents the jobs that the user has applied for.
@@ -79,6 +85,14 @@ public class User {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public UserRole getRole() {
+		return role;
+	}
+
+	public void setRole(UserRole role) {
+		this.role = role;
 	}
 
 	public Set<Job> getAppliedJobs() {

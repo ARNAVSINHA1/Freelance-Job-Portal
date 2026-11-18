@@ -11,13 +11,16 @@ import com.freelance.portal.models.Job;
 import com.freelance.portal.models.User;
 import com.freelance.portal.repositories.JobRepository;
 import com.freelance.portal.repositories.UserRepository;
+import com.freelance.portal.exception.ResourceNotFoundException;
+import java.util.Objects;
+import org.springframework.lang.NonNull;
 
 /**
  * Service implementation for managing Job entities.
  * This class provides methods for job registration, retrieval, updating, and deletion.
  */
 @Service
-public class JobService implements com.freelance.portal.services.JobService {
+public class JobServiceImpl implements com.freelance.portal.services.JobService {
 
     @Autowired
     private JobRepository jobRepository;
@@ -39,12 +42,15 @@ public class JobService implements com.freelance.portal.services.JobService {
     }
 
     @Override
-    public Optional<Job> getJobById(Long id) {
+    public Optional<Job> getJobById(@NonNull Long id) {
+        Objects.requireNonNull(id, "id must not be null");
         return jobRepository.findById(id);
     }
 
     @Override
-    public Job updateJob(Long id, Job updatedJob) {
+    public Job updateJob(@NonNull Long id, Job updatedJob) {
+        Objects.requireNonNull(id, "id must not be null");
+        Objects.requireNonNull(updatedJob, "updatedJob must not be null");
         Optional<Job> existingJob = jobRepository.findById(id);
         if (existingJob.isPresent()) {
             Job job = existingJob.get();
@@ -53,17 +59,18 @@ public class JobService implements com.freelance.portal.services.JobService {
             job.setEmployer(updatedJob.getEmployer());
             return jobRepository.save(job);
         } else {
-            throw new IllegalArgumentException("Job not found with ID: " + id);
+            throw new ResourceNotFoundException("Job not found with ID: " + id);
         }
     }
 
     @Override
-    public String deleteJob(Long id) {
+    public String deleteJob(@NonNull Long id) {
+        Objects.requireNonNull(id, "id must not be null");
         if (jobRepository.existsById(id)) {
             jobRepository.deleteById(id);
             return "Job deleted successfully!";
         } else {
-            return "Job not found with ID: " + id;
+            throw new ResourceNotFoundException("Job not found with ID: " + id);
         }
     }
 
@@ -78,7 +85,9 @@ public class JobService implements com.freelance.portal.services.JobService {
     }
 
     @Override
-    public String applyForJob(Long jobId, Long userId) {
+    public String applyForJob(@NonNull Long jobId, @NonNull Long userId) {
+        Objects.requireNonNull(jobId, "jobId must not be null");
+        Objects.requireNonNull(userId, "userId must not be null");
         Optional<Job> jobOpt = jobRepository.findById(jobId);
         Optional<User> userOpt = userRepository.findById(userId);
 
@@ -95,8 +104,12 @@ public class JobService implements com.freelance.portal.services.JobService {
     }
 
     @Override
-    public List<Job> getUserJobApplications(Long userId) {
+    public List<Job> getUserJobApplications(@NonNull Long userId) {
+        Objects.requireNonNull(userId, "userId must not be null");
         Optional<User> userOpt = userRepository.findById(userId);
-        return userOpt.map(User::getAppliedJobs).map(ArrayList::new).orElseGet(ArrayList::new);
+        if (userOpt.isPresent()) {
+            return new ArrayList<>(userOpt.get().getAppliedJobs());
+        }
+        return new ArrayList<>();
     }
 }

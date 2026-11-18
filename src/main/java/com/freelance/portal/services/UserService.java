@@ -1,18 +1,25 @@
 package com.freelance.portal.services;
 
 import com.freelance.portal.models.User;
+import com.freelance.portal.models.UserRole;
 import java.util.List;
+import java.util.Optional;
+import org.springframework.lang.NonNull;
 
 public interface UserService {
 	User findUserByEmail(String email);
 
-	String registerUser(User user);
+	Optional<User> findUserById(@NonNull Long id);
+
+	User registerUser(User user);
 
 	List<User> listUsers();
 
-	User updateUser(Long id, User user);
+	User updateUser(@NonNull Long id, User user);
 
-	String deleteUser(Long id);
+	User updateUserRole(@NonNull Long id, UserRole role);
 
-	String changeUserPassword(Long userId, String oldPassword, String newPassword);
+	String deleteUser(@NonNull Long id);
+
+	String changeUserPassword(@NonNull Long userId, String oldPassword, String newPassword);
 }
